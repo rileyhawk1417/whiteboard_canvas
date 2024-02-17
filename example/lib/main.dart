@@ -1,3 +1,4 @@
+import 'package:drawing_canvas/canvas/whiteboard.dart';
 import 'package:flutter/material.dart';
 
 void main() {
@@ -111,6 +112,12 @@ class _MyHomePageState extends State<MyHomePage> {
             Text(
               '$_counter',
               style: Theme.of(context).textTheme.headlineMedium,
+            ),
+            //TODO: Ensure sized box constraint can be adjusted
+            SizedBox(
+              width: MediaQuery.of(context).size.width / 2,
+              height: MediaQuery.of(context).size.height / 2,
+              child: const Whiteboard(),
             ),
           ],
         ),
