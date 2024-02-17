@@ -59,6 +59,7 @@ class WhiteboardCanvas extends HookWidget {
   void onPointerDown(PointerDownEvent details, BuildContext context) {
     final renderBox = context.findRenderObject() as RenderBox;
     final offset = renderBox.globalToLocal(details.position);
+
     currentSketch.value = Sketch.fromDrawingMode(
         Sketch(
             vectors: [offset],
@@ -76,9 +77,11 @@ class WhiteboardCanvas extends HookWidget {
   void onPointerMove(PointerMoveEvent details, BuildContext context) {
     final renderBox = context.findRenderObject() as RenderBox;
     final offset = renderBox.globalToLocal(details.position);
+    final vectors = List<Offset>.from(currentSketch.value?.vectors ?? [])
+      ..add(offset);
     currentSketch.value = Sketch.fromDrawingMode(
         Sketch(
-            vectors: [offset],
+            vectors: vectors,
             size: drawingMode.value == DrawingModes.eraser
                 ? eraserSize.value
                 : strokeSize.value,
