@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:drawing_canvas/canvas/models/drawing_modes.dart';
 
 //TODO: Refactor this class to a freezed model once its working.
+//TODO: Change to abstract class in order to use copyWith.
 class Sketch {
   final List<Offset> vectors;
   final Color color;
@@ -54,7 +55,7 @@ class Sketch {
   }
 }
 
-enum SketchType { scribble, line, square, circle, polygon }
+enum SketchType { scribble, line, square, circle, polygon, eraser }
 
 bool checkDrawingTypeFill(DrawingModes mode) {
   switch (mode) {
@@ -62,7 +63,6 @@ bool checkDrawingTypeFill(DrawingModes mode) {
       return true;
     case DrawingModes.pencil:
       return true;
-
     case DrawingModes.eraser:
       return true;
     default:
@@ -73,6 +73,7 @@ bool checkDrawingTypeFill(DrawingModes mode) {
 SketchType checkDrawingType(DrawingModes mode) {
   switch (mode) {
     case DrawingModes.eraser:
+      return SketchType.scribble;
     case DrawingModes.line:
       return SketchType.line;
     case DrawingModes.pencil:
