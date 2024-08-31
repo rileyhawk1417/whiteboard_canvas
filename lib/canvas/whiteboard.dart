@@ -1,6 +1,7 @@
 import 'package:drawing_canvas/canvas/canvas.dart';
 import 'package:drawing_canvas/canvas/models/drawing_modes.dart';
 import 'package:drawing_canvas/canvas/models/sketch_model.dart';
+import 'package:drawing_canvas/canvas/widgets/toolbar.dart';
 import 'package:flutter/material.dart' hide Image;
 import 'dart:ui';
 import 'package:flutter_hooks/flutter_hooks.dart';
@@ -26,6 +27,8 @@ class Whiteboard extends HookWidget {
 
     return Scaffold(
       body: Stack(
+        //NOTE: Due to alignment issue bar will stay fixed. Maybe allow custom positioning?
+        alignment: AlignmentDirectional.bottomCenter,
         children: [
           Container(
             color: kCanvasColor,
@@ -47,7 +50,17 @@ class Whiteboard extends HookWidget {
               backgroundImage: backgroundImage,
             ),
           ),
-          //TODO: Add positioned tool bar here
+          CanvasToolBar(
+              selectedColor: selectedColor,
+              strokeSize: strokeSize,
+              eraserSize: eraserSize,
+              drawingMode: drawingMode,
+              currentSketch: currentSketch,
+              allSketches: allSketches,
+              canvasGlobalKey: whiteboardCanvasKey,
+              filled: filled,
+              shapeSides: shapeSides,
+              backgroundImage: backgroundImage)
         ],
       ),
     );

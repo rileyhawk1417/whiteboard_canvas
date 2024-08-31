@@ -1,5 +1,7 @@
 library drawing_canvas;
 
+import 'package:drawing_canvas/canvas/whiteboard.dart';
+
 /*
 NOTE: The plan is to have a drawing class.
 - A class that can handle vectors & positioning.
@@ -8,8 +10,9 @@ NOTE: The plan is to have a drawing class.
 - A class to handle backgrond images.
 - A class for drawing tools (pencils, eraser, etc)
 */
-/// A Calculator.
-class Calculator {
-  /// Returns [value] plus 1.
-  int addOne(int value) => value + 1;
+/// DrawingCanvas
+class DrawingCanvas {
+  newWhiteBoard() {
+    return const Whiteboard();
+  }
 }
