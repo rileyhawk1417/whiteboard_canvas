@@ -2,6 +2,8 @@ import 'dart:math' as math;
 import 'dart:ui';
 
 import 'package:drawing_canvas/canvas/models/sketch_painter.dart';
+import 'package:drawing_canvas/canvas/widgets/toolbar.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart' hide Image;
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:drawing_canvas/canvas/models/sketch_model.dart';
@@ -47,18 +49,24 @@ class WhiteboardCanvas extends HookWidget {
   Widget build(BuildContext context) {
     return MouseRegion(
       cursor: SystemMouseCursors.precise,
-      child: Stack(
-        children: [
-          buildAllSketches(context),
-          buildCurrentSketch(context),
-        ],
-      ),
+      child: GestureDetector(
+          onSecondaryTap: () =>
+              showOptions(context, eraserSize, strokeSize, selectedColor),
+          child: Stack(
+            children: [
+              buildAllSketches(context),
+              buildCurrentSketch(context),
+            ],
+          )),
     );
   }
 
   void onPointerDown(PointerDownEvent details, BuildContext context) {
     final renderBox = context.findRenderObject() as RenderBox;
     final offset = renderBox.globalToLocal(details.position);
+    //NOTE: Calling the right Click gesture here will disrupt the normal drawing op
+    //NOTE: Causes the need to perform a hard restart.
+    //if((details.buttons && kSecondaryButton) != 0){}
 
     currentSketch.value = Sketch.fromDrawingMode(
         Sketch(
