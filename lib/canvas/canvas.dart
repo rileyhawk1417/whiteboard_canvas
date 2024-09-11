@@ -12,7 +12,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 const Color kCanvasColor = Color(0xfff2f3f7);
 
-class WhiteboardCanvas extends HookWidget {
+class WhiteboardCanvas extends StatefulHookConsumerWidget {
   final double height;
   final double width;
   final ValueNotifier<Color> selectedColor;
@@ -46,14 +46,38 @@ class WhiteboardCanvas extends HookWidget {
       : super(key: key);
 
   @override
+  ConsumerState<ConsumerStatefulWidget> createState() =>
+      WhiteboardCanvasState();
+}
+
+class WhiteboardCanvasState extends ConsumerState<WhiteboardCanvas> {
+  Offset _canvasPos = Offset(0, 0);
+  Offset _startPos = Offset(0, 0);
+
+  @override
   Widget build(BuildContext context) {
     return MouseRegion(
       cursor: SystemMouseCursors.precise,
       child: GestureDetector(
-          onSecondaryTap: () =>
-              showOptions(context, eraserSize, strokeSize, selectedColor),
+          onSecondaryTap: () => showOptions(context, widget.eraserSize,
+              widget.strokeSize, widget.selectedColor),
+          onPanStart: (details) => {
+                setState(() {
+                  _startPos = details.localPosition;
+                })
+              },
+          onPanUpdate: (details) => {
+                setState(() {
+                  _canvasPos += details.localPosition - _startPos;
+                  _startPos = details.localPosition;
+                })
+              },
           child: Stack(
             children: [
+              Container(
+                  width: MediaQuery.of(context).size.width,
+                  height: MediaQuery.of(context).size.height,
+                  color: Colors.black),
               buildAllSketches(context),
               buildCurrentSketch(context),
             ],
@@ -68,73 +92,76 @@ class WhiteboardCanvas extends HookWidget {
     //NOTE: Causes the need to perform a hard restart.
     //if((details.buttons && kSecondaryButton) != 0){}
 
-    currentSketch.value = Sketch.fromDrawingMode(
+    widget.currentSketch.value = Sketch.fromDrawingMode(
         Sketch(
             vectors: [offset],
-            size: drawingMode.value == DrawingModes.eraser
-                ? eraserSize.value
-                : strokeSize.value,
-            color: drawingMode.value == DrawingModes.eraser
+            size: widget.drawingMode.value == DrawingModes.eraser
+                ? widget.eraserSize.value
+                : widget.strokeSize.value,
+            color: widget.drawingMode.value == DrawingModes.eraser
                 ? kCanvasColor
-                : selectedColor.value,
-            shapeSides: shapeSides.value),
-        drawingMode.value,
-        filled.value);
+                : widget.selectedColor.value,
+            shapeSides: widget.shapeSides.value),
+        widget.drawingMode.value,
+        widget.filled.value);
   }
 
   void onPointerMove(PointerMoveEvent details, BuildContext context) {
     final renderBox = context.findRenderObject() as RenderBox;
     final offset = renderBox.globalToLocal(details.position);
-    final vectors = List<Offset>.from(currentSketch.value?.vectors ?? [])
+    final vectors = List<Offset>.from(widget.currentSketch.value?.vectors ?? [])
       ..add(offset);
-    currentSketch.value = Sketch.fromDrawingMode(
+    widget.currentSketch.value = Sketch.fromDrawingMode(
         Sketch(
             vectors: vectors,
-            size: drawingMode.value == DrawingModes.eraser
-                ? eraserSize.value
-                : strokeSize.value,
-            color: drawingMode.value == DrawingModes.eraser
+            size: widget.drawingMode.value == DrawingModes.eraser
+                ? widget.eraserSize.value
+                : widget.strokeSize.value,
+            color: widget.drawingMode.value == DrawingModes.eraser
                 ? kCanvasColor
-                : selectedColor.value,
-            shapeSides: shapeSides.value),
-        drawingMode.value,
-        filled.value);
+                : widget.selectedColor.value,
+            shapeSides: widget.shapeSides.value),
+        widget.drawingMode.value,
+        widget.filled.value);
   }
 
   void onPointerUp(PointerUpEvent details) {
-    allSketches.value = List<Sketch>.from(allSketches.value)
-      ..add(currentSketch.value!);
-    currentSketch.value = Sketch.fromDrawingMode(
+    widget.allSketches.value = List<Sketch>.from(widget.allSketches.value)
+      ..add(widget.currentSketch.value!);
+    widget.currentSketch.value = Sketch.fromDrawingMode(
         Sketch(
             vectors: [],
-            size: drawingMode.value == DrawingModes.eraser
-                ? eraserSize.value
-                : strokeSize.value,
-            color: drawingMode.value == DrawingModes.eraser
+            size: widget.drawingMode.value == DrawingModes.eraser
+                ? widget.eraserSize.value
+                : widget.strokeSize.value,
+            color: widget.drawingMode.value == DrawingModes.eraser
                 ? kCanvasColor
-                : selectedColor.value,
-            shapeSides: shapeSides.value),
-        drawingMode.value,
-        filled.value);
+                : widget.selectedColor.value,
+            shapeSides: widget.shapeSides.value),
+        widget.drawingMode.value,
+        widget.filled.value);
   }
 
 //TODO: Refactor these smaller widgets somewhere else
   Widget buildAllSketches(BuildContext context) {
     return SizedBox(
-      height: height,
-      width: width,
+      height: widget.height,
+      width: widget.width,
       child: ValueListenableBuilder<List<Sketch>>(
-        valueListenable: allSketches,
+        valueListenable: widget.allSketches,
         builder: (context, sketches, _) {
           return RepaintBoundary(
-            key: whiteboardCanvasKey,
+            key: widget.whiteboardCanvasKey,
             child: Container(
-              height: height,
-              width: width,
+              height: widget.height,
+              width: widget.width,
               color: kCanvasColor,
               child: CustomPaint(
                 painter: SketchPainter(
-                    sketches: sketches, bgImage: backgroundImage.value),
+                    canvasPos: _canvasPos,
+                    drawingMode: widget.drawingMode.value,
+                    sketches: sketches,
+                    bgImage: widget.backgroundImage.value),
               ),
             ),
           );
@@ -150,14 +177,16 @@ class WhiteboardCanvas extends HookWidget {
       onPointerMove: (details) => onPointerMove(details, context),
       onPointerUp: onPointerUp,
       child: ValueListenableBuilder(
-        valueListenable: currentSketch,
+        valueListenable: widget.currentSketch,
         builder: (context, sketch, child) {
           return RepaintBoundary(
             child: SizedBox(
-              height: height,
-              width: width,
+              height: widget.height,
+              width: widget.width,
               child: CustomPaint(
                 painter: SketchPainter(
+                  canvasPos: _canvasPos,
+                  drawingMode: widget.drawingMode.value,
                   sketches: sketch == null ? [] : [sketch],
                 ),
               ),
@@ -174,6 +203,8 @@ class BuildAllSketches extends ConsumerWidget {
   final double width;
   final GlobalKey canvasKey;
   final Image? bgImage;
+  final Offset canvasPos;
+  final DrawingModes drawingMode;
   final ValueNotifier<List<Sketch>> sketches;
 
   const BuildAllSketches(
@@ -182,6 +213,8 @@ class BuildAllSketches extends ConsumerWidget {
       required this.width,
       required this.canvasKey,
       this.bgImage,
+      required this.canvasPos,
+      required this.drawingMode,
       required this.sketches});
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -198,8 +231,11 @@ class BuildAllSketches extends ConsumerWidget {
               width: width,
               color: kCanvasColor,
               child: CustomPaint(
-                painter:
-                    SketchPainter(sketches: sketches.value, bgImage: bgImage),
+                painter: SketchPainter(
+                    canvasPos: canvasPos,
+                    drawingMode: drawingMode,
+                    sketches: sketches.value,
+                    bgImage: bgImage),
               ),
             ),
           );

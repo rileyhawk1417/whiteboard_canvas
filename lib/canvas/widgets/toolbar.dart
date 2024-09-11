@@ -136,6 +136,13 @@ class CanvasToolBar extends HookWidget {
                       onLongPress: () => {},
                       onSecondaryTap: () => {},
                       tooltip: 'Circle'),
+                  _IconBox(
+                      iconData: Icons.pan_tool,
+                      selected: drawingMode.value == DrawingModes.pan,
+                      onTap: () => drawingMode.value = DrawingModes.pan,
+                      onLongPress: () => {},
+                      onSecondaryTap: () => {},
+                      tooltip: 'Pan')
                 ],
               )
             ]),

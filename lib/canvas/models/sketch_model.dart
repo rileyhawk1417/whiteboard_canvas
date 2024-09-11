@@ -55,7 +55,7 @@ class Sketch {
   }
 }
 
-enum SketchType { scribble, line, square, circle, polygon, eraser }
+enum SketchType { scribble, line, square, circle, polygon, eraser, pan }
 
 bool checkDrawingTypeFill(DrawingModes mode) {
   switch (mode) {
@@ -84,6 +84,9 @@ SketchType checkDrawingType(DrawingModes mode) {
       return SketchType.circle;
     case DrawingModes.polygon:
       return SketchType.polygon;
+    case DrawingModes.pan:
+      print('pan case in sketch model');
+      return SketchType.pan;
     default:
       return SketchType.scribble;
   }

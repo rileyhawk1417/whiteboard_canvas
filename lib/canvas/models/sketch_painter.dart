@@ -1,3 +1,4 @@
+import 'package:drawing_canvas/canvas/models/drawing_modes.dart';
 import 'package:drawing_canvas/canvas/models/sketch_model.dart';
 import 'package:flutter/material.dart' hide Image;
 import 'dart:math' as math;
@@ -5,16 +6,23 @@ import 'dart:ui';
 
 class SketchPainter extends CustomPainter {
   final List<Sketch> sketches;
+  final DrawingModes? drawingMode;
   final Image? bgImage;
+  final Offset canvasPos;
 
-  const SketchPainter({
-    Key? key,
-    this.bgImage,
-    required this.sketches,
-  });
+  const SketchPainter(
+      {Key? key,
+      this.bgImage,
+      this.drawingMode,
+      required this.sketches,
+      required this.canvasPos});
 
   @override
   void paint(Canvas canvas, Size size) {
+    if (drawingMode != null && drawingMode == DrawingModes.pan) {
+      print('navigating canvas x: ${canvasPos.dx} y: ${canvasPos.dy}');
+      canvas.translate(canvasPos.dx, canvasPos.dy);
+    }
     if (bgImage != null) {
       canvas.drawImageRect(
         bgImage!,
@@ -59,6 +67,13 @@ class SketchPainter extends CustomPainter {
         painter.style = PaintingStyle.stroke;
         painter.strokeWidth = sketch.size;
       }
+
+      /*
+      canvas.drawPoints(
+          PointMode.points,
+          vectors.map((c) => c.translate(canvasPos.dx, canvasPos.dy)).toList(),
+          painter);
+        */
 
       // Get start & end of vector points
       Offset vectorStart = sketch.vectors.first;
@@ -110,6 +125,7 @@ class SketchPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant SketchPainter oldDelegate) {
-    return oldDelegate.sketches != sketches;
+    return oldDelegate.sketches != sketches ||
+        oldDelegate.canvasPos != canvasPos;
   }
 }
