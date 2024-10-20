@@ -19,6 +19,7 @@ class SketchPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
+    canvas.save();
     if (drawingMode != null && drawingMode == DrawingModes.pan) {
       print('navigating canvas x: ${canvasPos.dx} y: ${canvasPos.dy}');
       canvas.translate(canvasPos.dx, canvasPos.dy);
@@ -121,6 +122,7 @@ class SketchPainter extends CustomPainter {
         canvas.drawPath(polyPath, painter);
       }
     }
+    canvas.restore();
   }
 
   @override

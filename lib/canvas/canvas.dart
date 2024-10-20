@@ -27,6 +27,8 @@ class WhiteboardCanvas extends StatefulHookConsumerWidget {
   final GlobalKey whiteboardCanvasKey;
   final ValueNotifier<int> shapeSides;
   final ValueNotifier<bool> filled;
+  final ValueNotifier<Offset> canvasPos;
+  final ValueNotifier<Offset> startPos;
 
   const WhiteboardCanvas(
       {Key? key,
@@ -42,7 +44,9 @@ class WhiteboardCanvas extends StatefulHookConsumerWidget {
       required this.shapeSides,
       required this.strokeSize,
       required this.sideBarController,
-      required this.backgroundImage})
+      required this.backgroundImage,
+      required this.canvasPos,
+      required this.startPos})
       : super(key: key);
 
   @override
@@ -52,10 +56,10 @@ class WhiteboardCanvas extends StatefulHookConsumerWidget {
 
 class WhiteboardCanvasState extends ConsumerState<WhiteboardCanvas> {
   Offset _canvasPos = Offset(0, 0);
-  Offset _startPos = Offset(0, 0);
 
   @override
   Widget build(BuildContext context) {
+    Offset _startPos = widget.startPos.value;
     return MouseRegion(
       cursor: SystemMouseCursors.precise,
       child: GestureDetector(
@@ -63,14 +67,37 @@ class WhiteboardCanvasState extends ConsumerState<WhiteboardCanvas> {
               widget.strokeSize, widget.selectedColor),
           onPanStart: (details) => {
                 setState(() {
-                  _startPos = details.localPosition;
+                  if (widget.drawingMode.value == DrawingModes.pan) {
+                    _startPos = details.localPosition;
+                  }
+/*
+                  else {
+                    setState(() {
+                      widget.startPos.value = details.localPosition;
+                    });
+                  }
+                        */
                 })
               },
           onPanUpdate: (details) => {
-                setState(() {
-                  _canvasPos += details.localPosition - _startPos;
-                  _startPos = details.localPosition;
-                })
+                if (widget.drawingMode.value == DrawingModes.pan)
+                  {
+                    setState(() {
+                      widget.canvasPos.value += details.delta;
+                      widget.startPos.value = details.localPosition;
+                    })
+                  }
+                //NOTE: This causes canvasposition to change alot
+                /*
+                else
+                  {
+                    setState(() {
+                      widget.canvasPos.value +=
+                          details.localPosition - widget.startPos.value;
+                      widget.startPos.value = details.localPosition;
+                    })
+                  }
+                */
               },
           child: Stack(
             children: [
@@ -158,7 +185,7 @@ class WhiteboardCanvasState extends ConsumerState<WhiteboardCanvas> {
               color: kCanvasColor,
               child: CustomPaint(
                 painter: SketchPainter(
-                    canvasPos: _canvasPos,
+                    canvasPos: widget.canvasPos.value,
                     drawingMode: widget.drawingMode.value,
                     sketches: sketches,
                     bgImage: widget.backgroundImage.value),
@@ -185,7 +212,7 @@ class WhiteboardCanvasState extends ConsumerState<WhiteboardCanvas> {
               width: widget.width,
               child: CustomPaint(
                 painter: SketchPainter(
-                  canvasPos: _canvasPos,
+                  canvasPos: widget.canvasPos.value,
                   drawingMode: widget.drawingMode.value,
                   sketches: sketch == null ? [] : [sketch],
                 ),

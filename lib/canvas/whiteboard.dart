@@ -21,6 +21,8 @@ class Whiteboard extends HookWidget {
     final backgroundImage = useState<Image?>(null);
     ValueNotifier<Sketch?> currentSketch = useState(null);
     ValueNotifier<List<Sketch>> allSketches = useState([]);
+    ValueNotifier<Offset> canvasPos = useState(Offset.zero);
+    ValueNotifier<Offset> startPos = useState(Offset.zero);
 
     final animationController = useAnimationController(
         duration: const Duration(milliseconds: 150), initialValue: 1);
@@ -48,6 +50,8 @@ class Whiteboard extends HookWidget {
               strokeSize: strokeSize,
               sideBarController: animationController,
               backgroundImage: backgroundImage,
+              canvasPos: canvasPos,
+              startPos: startPos,
             ),
           ),
           CanvasToolBar(
