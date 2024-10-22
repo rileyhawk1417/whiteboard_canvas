@@ -59,69 +59,58 @@ class WhiteboardCanvasState extends ConsumerState<WhiteboardCanvas> {
 
   @override
   Widget build(BuildContext context) {
-    Offset _startPos = widget.startPos.value;
-    return MouseRegion(
-      cursor: SystemMouseCursors.precise,
-      child: GestureDetector(
-          onSecondaryTap: () => showOptions(context, widget.eraserSize,
-              widget.strokeSize, widget.selectedColor),
-          onPanStart: (details) => {
-                setState(() {
-                  if (widget.drawingMode.value == DrawingModes.pan) {
-                    _startPos = details.localPosition;
-                  }
-/*
-                  else {
-                    setState(() {
-                      widget.startPos.value = details.localPosition;
-                    });
-                  }
-                        */
-                })
-              },
-          onPanUpdate: (details) => {
-                if (widget.drawingMode.value == DrawingModes.pan)
-                  {
-                    setState(() {
-                      widget.canvasPos.value += details.delta;
-                      widget.startPos.value = details.localPosition;
-                    })
-                  }
-                //NOTE: This causes canvasposition to change alot
-                /*
-                else
-                  {
-                    setState(() {
-                      widget.canvasPos.value +=
-                          details.localPosition - widget.startPos.value;
-                      widget.startPos.value = details.localPosition;
-                    })
-                  }
-                */
-              },
-          child: Stack(
-            children: [
-              Container(
-                  width: MediaQuery.of(context).size.width,
-                  height: MediaQuery.of(context).size.height,
-                  color: Colors.black),
-              buildAllSketches(context),
-              buildCurrentSketch(context),
-            ],
-          )),
-    );
+    return InteractiveViewer(
+        panEnabled: widget.drawingMode.value == DrawingModes.pan ? true : false,
+        //scaleEnabled: widget.drawingMode.value == DrawingModes.pan ? true : false ,
+        boundaryMargin: const EdgeInsets.all(double.infinity),
+        onInteractionUpdate: (details) => {
+              if (widget.drawingMode.value == DrawingModes.pan)
+                {
+                  print('print out global canvasPos onInteractionUpdate'),
+                  print(widget.canvasPos.value),
+                  setState(() {
+                    widget.canvasPos.value = details.focalPoint;
+                  })
+                }
+            },
+        child: MouseRegion(
+            child: Stack(
+          children: [
+            Container(
+              padding: EdgeInsets.all(40),
+              decoration: BoxDecoration(
+                  color: Colors.red,
+                  border: Border.all(width: 10.0, color: Colors.red),
+                  borderRadius: BorderRadius.circular(10)),
+              width: MediaQuery.of(context).size.width,
+              height: MediaQuery.of(context).size.height,
+            ),
+            buildAllSketches(context),
+            buildCurrentSketch(context),
+          ],
+        )));
   }
 
   void onPointerDown(PointerDownEvent details, BuildContext context) {
+    //NOTE: Could renderbox be the issue why its stuck in small space?
     final renderBox = context.findRenderObject() as RenderBox;
+    print(context.widget);
+    print('parent render box');
+    print(renderBox.parent);
     final offset = renderBox.globalToLocal(details.position);
     //NOTE: Calling the right Click gesture here will disrupt the normal drawing op
     //NOTE: Causes the need to perform a hard restart.
     //if((details.buttons && kSecondaryButton) != 0){}
+    print('print out global canvasPos on pointer down');
+    print(widget.canvasPos.value);
+    print('Print out globalToLocal offset');
+    print(offset);
 
+    print('Print out details.position');
+    print(details.position);
     widget.currentSketch.value = Sketch.fromDrawingMode(
         Sketch(
-            vectors: [offset],
+            vectors: [details.localPosition],
             size: widget.drawingMode.value == DrawingModes.eraser
                 ? widget.eraserSize.value
                 : widget.strokeSize.value,
@@ -137,7 +126,7 @@ class WhiteboardCanvasState extends ConsumerState<WhiteboardCanvas> {
     final renderBox = context.findRenderObject() as RenderBox;
     final offset = renderBox.globalToLocal(details.position);
     final vectors = List<Offset>.from(widget.currentSketch.value?.vectors ?? [])
-      ..add(offset);
+      ..add(details.localPosition);
     widget.currentSketch.value = Sketch.fromDrawingMode(
         Sketch(
             vectors: vectors,

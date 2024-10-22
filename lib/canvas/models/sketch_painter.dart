@@ -19,10 +19,10 @@ class SketchPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    canvas.save();
     if (drawingMode != null && drawingMode == DrawingModes.pan) {
       print('navigating canvas x: ${canvasPos.dx} y: ${canvasPos.dy}');
-      canvas.translate(canvasPos.dx, canvasPos.dy);
+      //NOTE: Does not really translate drawing pointer.
+      //canvas.translate(canvasPos.dx, canvasPos.dy);
     }
     if (bgImage != null) {
       canvas.drawImageRect(
@@ -122,7 +122,6 @@ class SketchPainter extends CustomPainter {
         canvas.drawPath(polyPath, painter);
       }
     }
-    canvas.restore();
   }
 
   @override
