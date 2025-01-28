@@ -79,6 +79,148 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
       body: DrawingCanvas().newWhiteBoard(),
     );
-    return pureBoard;
+    return InfiniteCanvas();
+  }
+}
+
+class InfiniteCanvas extends StatefulWidget {
+  @override
+  _InfiniteCanvasState createState() => _InfiniteCanvasState();
+}
+
+class _InfiniteCanvasState extends State<InfiniteCanvas> {
+  final TransformationController _transformationController =
+      TransformationController();
+  List<Offset> _points = [];
+
+  bool _isDrawing = false; // To track if the user is drawing
+  bool zoomEnabled = false;
+  bool panEnabled = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text("Infinite Canvas (Desktop Supported)")),
+      body: Listener(
+        onPointerDown: (event) {
+          setState(() {
+            _isDrawing = true;
+            _addPoint(event.localPosition);
+          });
+        },
+        onPointerMove: (event) {
+          if (_isDrawing) {
+            setState(() {
+              _addPoint(event.localPosition);
+            });
+          }
+        },
+        onPointerUp: (event) {
+          setState(() {
+            _isDrawing = false;
+            _addPoint(null); // Add a break between lines
+          });
+        },
+        child: InteractiveViewer(
+          panEnabled: panEnabled,
+          scaleEnabled: zoomEnabled,
+          transformationController: _transformationController,
+          boundaryMargin: EdgeInsets.all(
+              double.infinity), // Allow panning beyond the boundaries
+          minScale: 0.1, // Minimum zoom
+          maxScale: 5.0, // Maximum zoom
+          child: CustomPaint(
+            painter: CanvasPainter(_points),
+            size: Size.infinite, // Infinite size for canvas
+          ),
+        ),
+      ),
+      floatingActionButton:
+          Row(mainAxisAlignment: MainAxisAlignment.end, children: [
+        FloatingActionButton(
+          onPressed: () {
+            setState(() {
+              zoomEnabled = false;
+              panEnabled = false;
+              _isDrawing = true;
+            });
+          },
+          child: Icon(Icons.draw),
+        ),
+        FloatingActionButton(
+          onPressed: () {
+            setState(() {
+              panEnabled = false;
+              zoomEnabled = true;
+              _isDrawing = false;
+            });
+          },
+          child: Icon(Icons.zoom_in),
+        ),
+        FloatingActionButton(
+          onPressed: () {
+            setState(() {
+              panEnabled = true;
+              zoomEnabled = false;
+              _isDrawing = false;
+            });
+          },
+          child: Icon(Icons.pan_tool),
+        ),
+        FloatingActionButton(
+          onPressed: () {
+            setState(() {
+              _points.clear(); // Clear all points
+            });
+          },
+          child: Icon(Icons.clear),
+        )
+      ]),
+    );
+  }
+
+  void _addPoint(Offset? point) {
+    // Convert global pointer position to canvas-local position
+    if (point != null) {
+      final localPoint = _transformationController.toScene(point);
+      _points.add(localPoint);
+    } else {
+      _points.add(Offset.zero); // Add a null to create breaks in the drawing
+    }
+  }
+}
+
+class CanvasPainter extends CustomPainter {
+  final List<Offset> points;
+
+  CanvasPainter(this.points);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final Paint paint = Paint()
+      ..color = Colors.blue
+      ..strokeWidth = 4.0
+      ..strokeCap = StrokeCap.round;
+    //final vectorPath = Path();
+    /*
+    for (var point in points) {
+      if (points.isEmpty) return;
+      // vectorPath.moveTo(points[0].dx, points[0].dy);
+      // canvas.drawPath(vectorPath, paint);
+      canvas.drawLine(point, points[points.length - 1], paint);
+    }
+        */
+
+    for (int i = 0; i < points.length - 1; i++) {
+      if (points[i] != null && points[i + 1] != null) {
+        canvas.drawLine(points[i + 1]!, points[i + 1]!, paint);
+      }
+    }
+  }
+
+  @override
+  bool shouldRepaint(CanvasPainter oldDelegate) {
+    //return oldDelegate.points != points;
+    return true;
   }
 }
