@@ -71,6 +71,7 @@ class WhiteboardCanvasState extends ConsumerState<WhiteboardCanvas> {
   bool _isDrawing = false;
 
   List<Offset> _points = [];
+  double _minX = 0, _maxX = 0, _minY = 0, _maxY = 0;
 
   void _addPoint(Offset? point) {
     // Convert global pointer position to canvas-local position
@@ -85,12 +86,13 @@ class WhiteboardCanvasState extends ConsumerState<WhiteboardCanvas> {
   @override
   Widget build(BuildContext context) {
     return Listener(onPointerDown: (event) {
+      final localPoint = _transformController.toScene(event.localPosition);
       setState(() {
         _isDrawing = true;
         _addPoint(event.localPosition);
         widget.currentSketch.value = Sketch.fromDrawingMode(
             Sketch(
-                vectors: [event.localPosition],
+                vectors: [localPoint],
                 size: widget.drawingMode.value == DrawingModes.eraser
                     ? widget.eraserSize.value
                     : widget.strokeSize.value,
@@ -101,14 +103,36 @@ class WhiteboardCanvasState extends ConsumerState<WhiteboardCanvas> {
             widget.drawingMode.value,
             widget.filled.value);
         //widget.allSketches.value.add(widget.currentSketch.value!);
+
+        _minX = _points.isEmpty
+            ? localPoint.dx
+            : _minX < localPoint.dx
+                ? _minX
+                : localPoint.dx;
+        _maxX = _points.isEmpty
+            ? localPoint.dx
+            : _maxX > localPoint.dx
+                ? _maxX
+                : localPoint.dx;
+        _minY = _points.isEmpty
+            ? localPoint.dy
+            : _minY < localPoint.dy
+                ? _minY
+                : localPoint.dy;
+        _maxY = _points.isEmpty
+            ? localPoint.dy
+            : _maxY > localPoint.dy
+                ? _maxY
+                : localPoint.dy;
       });
     }, onPointerMove: (event) {
       if (_isDrawing) {
+        final localPoint = _transformController.toScene(event.localPosition);
         setState(() {
           _addPoint(event.localPosition);
           final vectors =
               List<Offset>.from(widget.currentSketch.value?.vectors ?? [])
-                ..add(event.localPosition);
+                ..add(localPoint);
           widget.currentSketch.value = Sketch.fromDrawingMode(
               Sketch(
                   vectors: vectors,
@@ -121,6 +145,27 @@ class WhiteboardCanvasState extends ConsumerState<WhiteboardCanvas> {
                   shapeSides: widget.shapeSides.value),
               widget.drawingMode.value,
               widget.filled.value);
+
+          _minX = _points.isEmpty
+              ? localPoint.dx
+              : _minX < localPoint.dx
+                  ? _minX
+                  : localPoint.dx;
+          _maxX = _points.isEmpty
+              ? localPoint.dx
+              : _maxX > localPoint.dx
+                  ? _maxX
+                  : localPoint.dx;
+          _minY = _points.isEmpty
+              ? localPoint.dy
+              : _minY < localPoint.dy
+                  ? _minY
+                  : localPoint.dy;
+          _maxY = _points.isEmpty
+              ? localPoint.dy
+              : _maxY > localPoint.dy
+                  ? _maxY
+                  : localPoint.dy;
         });
       }
     }, onPointerUp: (event) {
@@ -164,8 +209,9 @@ class WhiteboardCanvasState extends ConsumerState<WhiteboardCanvas> {
           },
           //NOTE: We still need to handle animation of the actual drawing to make it smooth.
           //NOTE: Nothing different from before we still need the canvas to grow and scale infinitely.
-          child: RepaintBoundary(
-              key: widget.whiteboardCanvasKey,
+          child: SizedBox(
+              width: (_maxX - _minX).abs() + 2000,
+              height: (_maxY - _minY).abs() + 2000,
               child: CustomPaint(
                   painter: CanvasPainter(
                       points: _points, sketches: widget.allSketches.value),
