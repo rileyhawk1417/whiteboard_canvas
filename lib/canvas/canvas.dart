@@ -212,10 +212,19 @@ class WhiteboardCanvasState extends ConsumerState<WhiteboardCanvas> {
           child: SizedBox(
               width: (_maxX - _minX).abs() + 2000,
               height: (_maxY - _minY).abs() + 2000,
-              child: CustomPaint(
-                  painter: CanvasPainter(
-                      points: _points, sketches: widget.allSketches.value),
-                  size: Size.infinite))
+              child: Stack(children: [
+                CustomPaint(
+                    painter: CanvasPainter(
+                        points: _points,
+                        sketches: widget.currentSketch.value == null
+                            ? []
+                            : [widget.currentSketch.value!]),
+                    size: Size.infinite),
+                CustomPaint(
+                    painter: CanvasPainter(
+                        points: _points, sketches: widget.allSketches.value),
+                    size: Size.infinite)
+              ]))
           /*
         child: Container(
           //color: Colors.black,

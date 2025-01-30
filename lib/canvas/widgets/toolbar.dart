@@ -119,7 +119,8 @@ class CanvasToolBar extends HookWidget {
                       selected: drawingMode.value == DrawingModes.eraser,
                       onTap: () => drawingMode.value = DrawingModes.eraser,
                       onLongPress: () => {},
-                      onSecondaryTap: () => {},
+                      onSecondaryTap: () => showOptions(
+                          context, eraserSize, strokeSize, selectedColor),
                       tooltip: 'Eraser'),
                   _IconBox(
                       iconData: Icons.square,

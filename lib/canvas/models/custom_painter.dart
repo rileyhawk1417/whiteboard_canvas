@@ -12,44 +12,16 @@ class CanvasPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    Rect rect = Rect.fromLTWH(0, 0, size.width, size.height);
-    Paint background = Paint();
-    background.color = Colors.blueAccent;
-    canvas.drawRect(rect, background);
+    //Rect rect = Rect.fromLTWH(0, 0, size.width, size.height);
+    //Paint background = Paint();
+    //background.color = Colors.blueAccent;
+    //canvas.drawRect(rect, background);
     //canvas.clipRect(rect);
     //canvas.scale(2.0);
-    /*
-    for (var item in points) {
-      final vectorPath = Path();
-      vectorPath.moveTo(item.dx, item.dy);
-      canvas.drawPath(vectorPath, paint);
-    }
-        */
-
-    /*
-    for (var point in points) {
-      if (points.isEmpty) return;
-      // vectorPath.moveTo(points[0].dx, points[0].dy);
-      // canvas.drawPath(vectorPath, paint);
-      canvas.drawLine(point, points[points.length - 1], paint);
-    }
-        */
-    /*
-    for (int i = 0; i < points.length - 1; i++) {
-      final vecPath = Path();
-      if (points[i] != null && points[i + 1] != null) {
-        vecPath.moveTo(points[i + 1].dx, points[i + 1].dy);
-        //canvas.drawLine(points[i + 1]!, points[i + 1]!, paint);
-        print('Vector path in custom paint');
-        print(vecPath);
-        canvas.drawPath(vecPath, paint);
-      }
-    }
-        */
     for (Sketch sketch in sketches) {
       final vectors = sketch.vectors;
       if (vectors.isEmpty) return;
-      print(vectors);
+
       final vectorPath = Path();
       vectorPath.moveTo(vectors[0].dx, vectors[0].dy);
 
@@ -79,18 +51,51 @@ class CanvasPainter extends CustomPainter {
       Offset vectorStart = sketch.vectors.first;
       Offset vectorEnd = sketch.vectors.last;
 
-      if (sketch.sketchType == SketchType.scribble) {
-        canvas.drawPath(vectorPath, painter);
-      }
-      if (sketch.sketchType == SketchType.line) {
-        canvas.drawLine(vectorStart, vectorEnd, painter);
+      Rect rect = Rect.fromPoints(vectorStart, vectorEnd);
+
+      switch (sketch.sketchType) {
+        case SketchType.scribble:
+          canvas.drawPath(vectorPath, painter);
+        case SketchType.line:
+          canvas.drawLine(vectorStart, vectorEnd, painter);
+        case SketchType.square:
+          canvas.drawRRect(
+              RRect.fromRectAndRadius(rect, const Radius.circular(5)), painter);
+        case SketchType.circle:
+          canvas.drawOval(rect, painter);
+        case SketchType.polygon:
+
+          // Get the center vector between start & end
+          Offset centerVector = (vectorStart / 2) + (vectorEnd / 2);
+
+          //Calculate vectorpath radius from start & end
+          double radius = (vectorStart - vectorEnd).distance / 2;
+          Path polyPath = Path();
+          int sides = sketch.shapeSides;
+          var angle = (math.pi * 2) / sides;
+          double radian = 0.0;
+
+          Offset startVector =
+              Offset(radius * math.cos(radian), radius * math.sin(radian));
+          polyPath.moveTo(startVector.dx + centerVector.dx,
+              startVector.dy + centerVector.dy);
+
+          for (int idx = 1; idx <= sides; idx++) {
+            double x =
+                radius * math.cos(radian + angle * idx) + centerVector.dx;
+            double y =
+                radius * math.sin(radian + angle * idx) + centerVector.dy;
+            polyPath.lineTo(x, y);
+          }
+          polyPath.close();
+          canvas.drawPath(polyPath, painter);
+        default:
       }
     }
   }
 
   @override
   bool shouldRepaint(CanvasPainter oldDelegate) {
-    //return oldDelegate.sketches != sketches;
     return true;
   }
 }
