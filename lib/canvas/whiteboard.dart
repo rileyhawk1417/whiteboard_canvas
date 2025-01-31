@@ -28,17 +28,16 @@ class Whiteboard extends HookWidget {
         duration: const Duration(milliseconds: 150), initialValue: 1);
 
     return Scaffold(
+      extendBody: true,
       body: Stack(
         //NOTE: Due to alignment issue bar will stay fixed. Maybe allow custom positioning?
         alignment: AlignmentDirectional.bottomCenter,
         children: [
           Container(
             color: kCanvasColor,
-            width: MediaQuery.of(context).size.width,
-            height: MediaQuery.of(context).size.height,
             child: WhiteboardCanvas(
-              height: MediaQuery.of(context).size.height,
-              width: MediaQuery.of(context).size.width,
+              height: double.infinity,
+              width: double.infinity,
               eraserSize: eraserSize,
               selectedColor: selectedColor,
               drawingMode: drawingMode,
