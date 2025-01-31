@@ -1,7 +1,8 @@
 name: drawing_canvas
-description: "A new Flutter package project."
+description: "Drawing Canvas Package"
 version: 0.0.1
 homepage:
+publish_to: "none"
 
 environment:
   sdk: '>=3.2.0 <4.0.0'
