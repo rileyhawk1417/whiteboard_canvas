@@ -194,7 +194,7 @@ class WhiteboardCanvasState extends ConsumerState<WhiteboardCanvas> {
           panEnabled: widget.drawingMode.value == DrawingModes.pan,
           boundaryMargin: const EdgeInsets.all(double.infinity),
           minScale: 0.1,
-          maxScale: 5.0,
+          maxScale: 10.0,
           onInteractionUpdate: (details) {
             verticalScale = details.verticalScale;
             horizontalScale = details.horizontalScale;
