@@ -244,55 +244,53 @@ class OptionDialogState extends State<OptionDialog> {
     double eraserSize = widget.eraserSize.value;
     double strokeSize = widget.strokeSize.value;
     Color color = widget.color.value;
-    return AlertDialog(
-      title: const Text('Customize'),
-      content: Column(
-        children: [
-          Text('Choose a color', style: TextStyle(fontWeight: FontWeight.bold)),
-          SizedBox(
-              child: ColorPicker(
-            pickerColor: color,
-            onColorChanged: (value) {
-              setState(() {
-                widget.color.value = value;
-              });
-            },
-          )),
-          Column(children: [
-            const SizedBox(height: 10),
-            const Text('Stroke Size',
+    return SimpleDialog(
+      children: [
+        Column(
+          children: [
+            Text('Choose a color',
                 style: TextStyle(fontWeight: FontWeight.bold)),
-            Slider(
-                value: strokeSize,
-                min: 0,
-                max: 50,
-                onChanged: (val) {
-                  setState(() {
-                    widget.strokeSize.value = val;
-                  });
-                }),
-          ]),
-          Column(
-            children: [
+            SizedBox(
+                child: ColorPicker(
+              pickerColor: color,
+              onColorChanged: (value) {
+                setState(() {
+                  widget.color.value = value;
+                });
+              },
+            )),
+            Column(children: [
               const SizedBox(height: 10),
-              const Text('Eraser Size',
+              const Text('Stroke Size',
                   style: TextStyle(fontWeight: FontWeight.bold)),
               Slider(
-                  value: eraserSize,
+                  value: strokeSize,
                   min: 0,
-                  max: 80,
+                  max: 50,
                   onChanged: (val) {
                     setState(() {
-                      widget.eraserSize.value = val;
+                      widget.strokeSize.value = val;
                     });
-                  })
-            ],
-          )
-        ],
-      ),
-      actions: [
-        MaterialButton(
-            child: Text('Done'), onPressed: () => Navigator.pop(context))
+                  }),
+            ]),
+            Column(
+              children: [
+                const SizedBox(height: 10),
+                const Text('Eraser Size',
+                    style: TextStyle(fontWeight: FontWeight.bold)),
+                Slider(
+                    value: eraserSize,
+                    min: 0,
+                    max: 80,
+                    onChanged: (val) {
+                      setState(() {
+                        widget.eraserSize.value = val;
+                      });
+                    })
+              ],
+            )
+          ],
+        )
       ],
     );
   }
