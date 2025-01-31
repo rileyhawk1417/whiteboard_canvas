@@ -79,7 +79,7 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
       body: DrawingCanvas().newWhiteBoard(),
     );
-    return InfiniteCanvas();
+    return pureBoard;
   }
 }
 
