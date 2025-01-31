@@ -45,13 +45,14 @@ class Sketch {
   factory Sketch.fromJson(Map<String, dynamic> json) {
     List<Offset> vectorMap =
         (json['vectors'] as List).map((e) => Offset(e['dx'], e['dy'])).toList();
-    return Sketch(
+    Sketch returnValue = Sketch(
         vectors: vectorMap,
         size: json['size'],
         color: (json['color'] as String).toColor(),
         shapeSides: json['shapeSides'],
         filled: json['filled'],
         sketchType: (json['sketchType'] as String).toSketchTypeEnum());
+    return returnValue;
   }
 }
 
@@ -85,7 +86,6 @@ SketchType checkDrawingType(DrawingModes mode) {
     case DrawingModes.polygon:
       return SketchType.polygon;
     case DrawingModes.pan:
-      print('pan case in sketch model');
       return SketchType.pan;
     default:
       return SketchType.scribble;
@@ -98,7 +98,7 @@ extension SketchTypeData on SketchType {
 
 extension SketchTypeExt on String {
   SketchType toSketchTypeEnum() =>
-      SketchType.values.firstWhere((e) => e.toString() == 'SketchTyper.$this');
+      SketchType.values.firstWhere((e) => e.toString() == 'SketchType.$this');
 }
 
 extension ColorExt on String {

@@ -44,6 +44,7 @@ class CanvasToolBar extends HookWidget {
     final _undoRedoStack = useState(_UndoRedoStack(
         sketchesNotifier: allSketches, currentSketchNotifier: currentSketch));
     final scrollController = useScrollController();
+    var tmpSketchJson = useState([]);
 
     return Container(
       //NOTE: Enable custom height sizing...
@@ -143,7 +144,38 @@ class CanvasToolBar extends HookWidget {
                       onTap: () => drawingMode.value = DrawingModes.pan,
                       onLongPress: () => {},
                       onSecondaryTap: () => {},
-                      tooltip: 'Pan')
+                      tooltip: 'Pan'),
+
+                  _IconBox(
+                      iconData: Icons.save,
+                      selected: true,
+                      onTap: () {
+                        List<Map<String, dynamic>> sketches = [];
+                        List ar = allSketches.value;
+                        for (Sketch i in ar) {
+                          sketches.add(i.toJson());
+                        }
+
+                        tmpSketchJson.value = sketches;
+                      },
+                      onLongPress: () => {},
+                      onSecondaryTap: () => {},
+                      tooltip: 'Save'),
+
+                  _IconBox(
+                      iconData: Icons.upload_file_rounded,
+                      selected: true,
+                      onTap: () {
+                        List<Sketch> tmpSketches = [];
+                        for (Map<String, dynamic> x in tmpSketchJson.value) {
+                          Sketch tmpSketch = Sketch.fromJson(x);
+                          tmpSketches.add(tmpSketch);
+                        }
+                        allSketches.value = tmpSketches;
+                      },
+                      onLongPress: () => {},
+                      onSecondaryTap: () => {},
+                      tooltip: 'Load')
                 ],
               )
             ]),
